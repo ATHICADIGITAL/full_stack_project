@@ -1,0 +1,56 @@
+services:
+  web:
+    build: ./backend  # Path to your backend Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/code
+      - ./backend/static:/code/static  # If you have static files
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - ALLOWED_HOSTS=localhost,127.0.0.1
+    env_file:
+      - ./backend/.env  # Optional for sensitive data like secrets
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: full_stack_test_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  frontend:
+    build: ./frontend  # Path to your frontend Dockerfile with Nginx
+    ports:
+      - "3000:80"  # React app served on port 3000
+    depends_on:
+      - web
+    environment:
+      - NODE_ENV=production
+
+volumes:
+  pg-data:
+  redis-data:
