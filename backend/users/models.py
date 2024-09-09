@@ -6,9 +6,7 @@ from django.utils import timezone
 # Custom user manager
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, username, password=None, **extra_fields):
-        """
-        Create and return a regular user with an email and username.
-        """
+
         if not email:
             raise ValueError(_("The Email field must be set"))
         if not username:
